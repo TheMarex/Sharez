@@ -102,6 +102,24 @@ class Manager:
         self._current = []
         self._jobs = []
 
+    def swap(self, j, k):
+        if j in self._current\
+        or k in self._current:
+            return False
+
+        a = self._jobs.index(j)
+        b = self._jobs.index(k)
+        self._jobs.remove(k)
+        self._jobs.remove(j)
+        if k < j:
+            self._jobs.insert(a, k)
+            self._jobs.insert(b, j)
+        else:
+            self._jobs.insert(b, j)
+            self._jobs.insert(a, k)
+
+        return True
+
     def update(self):
         if  len(self._current) < self._min\
         and len(self._jobs) > 0:
@@ -217,6 +235,7 @@ class DropLocation(gtk.Label):
 class MainWin:
     _builder = None
     _store = None
+    _tree = None
     _box = None
     _button = None
     _lists = None
@@ -246,7 +265,39 @@ class MainWin:
         self._box.pack_start(frame, False, True)
 
         self._store = self._builder.get_object("procStore")
+        self._tree = self._builder.get_object("procList")
         win.show_all()
+
+    def _iter_prev(self, model, it):
+        src, dst = model.get(it, 0, 1)
+        before = model.get_iter_first()
+        while before:
+            nxt = model.iter_next(before)
+            s, d = model.get(nxt, 0, 1)
+            if s == src and d == dst:
+                return before
+            before = nxt
+        return None
+
+    def _up(self, widget):
+        sel = self._tree.get_selection()
+        model, it = sel.get_selected()
+        before = self._iter_prev(model, it)
+        j1 = self._get_job(model, it)
+        j2 = self._get_job(model, before)
+        if self._manager.swap(j1, j2):
+            model.swap(it, before)
+
+    def _down(self, widget):
+        sel = self._tree.get_selection()
+        model, it = sel.get_selected()
+        nxt = model.iter_next(it)
+        if not nxt:
+            return
+        j1 = self._get_job(model, it)
+        j2 = self._get_job(model, nxt)
+        if self._manager.swap(j1, j2):
+            model.swap(it, nxt)
     
     def dropped(self, dst, src):
         if self._is_running:
@@ -289,6 +340,14 @@ class MainWin:
         if len(self._jobs) == 0:
             self._button.set_sensitive(False)
             self._is_running = False
+
+    def _get_job(self, model, it):
+        src, dst = model.get(it, 0, 1)
+        for j in self._jobs:
+            if  j.get_src() == src\
+            and j.get_dst() == dst:
+                return j
+        return None
 
     def _get_iter(self, job):
         it = self._store.get_iter_first()

@@ -13,7 +13,10 @@ import time
 # Magic make-things-work call -_-
 gtk.gdk.threads_init()
 
-DATADIR = "./"
+DATADIR = "@prefix@/share/sharez/"
+# when running local
+if ".in" in sys.argv[0]:
+    DATADIR = "."	
 
 class RsyncParser:
     _proc = None

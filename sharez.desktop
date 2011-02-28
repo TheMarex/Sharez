@@ -1,0 +1,10 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Sharez
+Comment=Share local data
+Icon=sharez
+Exec=sharez
+Terminal=false
+Type=Application
+Categories=Utility;
+StartupNotify=true

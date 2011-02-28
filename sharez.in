@@ -7,6 +7,7 @@ import subprocess
 import re
 import threading
 import gtk
+import pango
 import urlparse, urllib
 import time
 
@@ -157,10 +158,10 @@ class DestList(gtk.TreeView):
         self._handler = handler
 
         cell = gtk.CellRendererText()
-        name = os.path.basename(dst)
-        col = gtk.TreeViewColumn(name, cell, text=0)
+        col = gtk.TreeViewColumn("", cell, text=0)
         self.append_column(col)
         self.set_model(self._store)
+        self.set_headers_visible(False)
 
         sel = self.get_selection()
         sel.set_mode(gtk.SELECTION_MULTIPLE)
@@ -313,10 +314,39 @@ class MainWin:
             job = Job(dst, src)
             self._add_job(job)
 
+    def _dst_label(self, path):
+        box = None
+        dev = ""
+        if path.startswith("/media/")\
+        or path.startswith("/home/"):
+            dev = [x for x in path.split("/") if x != ''][1]
+
+        if dev:
+            dev = "<b>%s</b>" % dev
+            label = gtk.Label()
+            label.set_markup(dev)
+            box = gtk.VBox()
+            box.set_spacing(2)
+            box.pack_start(label, False, False)
+
+        label = gtk.Label(path)
+        label.set_single_line_mode(False)
+        label.set_line_wrap(True)
+        label.set_ellipsize(pango.ELLIPSIZE_START)
+        if box:
+            box.pack_start(label, True, True)
+            return box
+        return label
+
     def new_dest(self, path):
+        box = gtk.VBox()
+        box.set_spacing(6)
+        box.set_border_width(6)
+        box.pack_start(self._dst_label(path), False, False)
         l = DestList(path, self)
+        box.pack_start(l)
         self._lists[path] = l
-        self._box.pack_start(l)
+        self._box.pack_start(box)
         self._box.show_all()
     
     def _close(self, widget):

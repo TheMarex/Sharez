@@ -65,7 +65,7 @@ class Job(threading.Thread):
         return self._dst
     
     def run(self):
-        cmd = "rsync -aP %s %s" % (self._src, self._dst)
+        cmd = "rsync -aP \"%s\" \"%s\"" % (self._src, self._dst)
         cmd = shlex.split(cmd)
         self._proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
         parser = RsyncParser(self._proc, self)

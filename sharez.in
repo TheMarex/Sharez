@@ -203,9 +203,16 @@ class DestList(gtk.TreeView):
             self._delete_current_row()
 
     def _drop(self, widget, context, x, y, sel, info, timestamp):
-        path = urllib.unquote(urlparse.urlparse(sel.data.strip()).path)
-        self._handler.dropped(self._dst, path)
-        self._store.append((path,))
+        data = sel.data.strip().replace("\r", "").split("\n")
+        valid = False
+        for url in data:
+            path = urllib.unquote(urlparse.urlparse(url).path)
+            if os.path.exists(path)\
+            and os.path.isdir(path):
+                self._handler.dropped(self._dst, path)
+                self._store.append((path,))
+                valid = True
+        context.finish(valid, False, timestamp)
 
 class DropLocation(gtk.Label):
     _handler = None
@@ -224,13 +231,15 @@ class DropLocation(gtk.Label):
         self.connect('drag-data-received', self._drop)
 
     def _drop(self, widget, context, x, y, sel, info, timestamp):
-        path = urllib.unquote(urlparse.urlparse(sel.data.strip()).path)
-        if os.path.exists(path):
-            if os.path.isdir(path):
-                context.finish(True, False, timestamp)
+        data = sel.data.strip().replace("\r", "").split("\n")
+        valid = False
+        for url in data:
+            path = urllib.unquote(urlparse.urlparse(url).path)
+            if os.path.exists(path)\
+            and os.path.isdir(path):
                 self._handler.new_dest(path)
-                return
-        context.finish(False, False, timestamp)
+                valid = True
+        context.finish(valid, False, timestamp)
 
 class MainWin:
     _builder = None

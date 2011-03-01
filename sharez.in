@@ -57,6 +57,7 @@ class Job(threading.Thread):
         self._src = src
         self._dst = dst
 
+        self.deamon = True
         threading.Thread.__init__(self)
 
     def get_src(self):
@@ -131,6 +132,15 @@ class Manager:
         job.set_manager(self)
         self.update()
 
+    def remove_job(self, job, update=True):
+        if job in self._current:
+            job.cancel()
+            self._current.remove(job)
+        else:
+            self._jobs.remove(job)
+        if update:
+            self.update()
+
     def _start_job(self):
         job = self._jobs[0]
         self._jobs.remove(job)
@@ -138,8 +148,9 @@ class Manager:
         job.start()
 
     def job_finished(self, job):
-        self._boss.job_finished(job)
-        self._current.remove(job)
+        if not job._killed:
+            self._boss.job_finished(job)
+            self._current.remove(job)
         self.update()
 
     def update_progress(self, job, percent):
@@ -338,6 +349,17 @@ class MainWin:
             return box
         return label
 
+    def _remove_dest(self, widget, dbox, dst):
+        if self._is_running:
+            for job in list(self._jobs):
+                if job.get_dst() == dst:
+                    self._remove_job(job)
+                    self._manager.remove_job(job, update=False)
+        self._manager.update()
+        dbox.hide()
+        self._box.remove(dbox)
+        dbox.destroy()
+
     def new_dest(self, path):
         box = gtk.VBox()
         box.set_spacing(6)
@@ -346,10 +368,14 @@ class MainWin:
         l = DestList(path, self)
         box.pack_start(l)
         self._lists[path] = l
+        button = gtk.Button(stock=gtk.STOCK_REMOVE)
+        button.connect('clicked', self._remove_dest, box, path)
+        box.pack_start(button, False, False)
         self._box.pack_start(box)
         self._box.show_all()
     
     def _close(self, widget):
+        self._cancel(None)
         gtk.main_quit()
 
     def _cancel(self, widget):
@@ -396,7 +422,7 @@ class MainWin:
             rsrc, rdst = self._store.get(it, 0, 1)
             if src == rsrc and dst == rdst:
                 return it
-            it = self._store.next_iter()
+            it = self._store.iter_next(it)
 
         return None
 
@@ -404,6 +430,9 @@ class MainWin:
         self._remove_job(job)
 
     def update_progress(self, job, prog):
+        if job not in self._jobs:
+            print "WARNING: Update from removed job: %s" % job
+            return
         it = self._get_iter(job)
         self._store.set(it, 2, prog)
 

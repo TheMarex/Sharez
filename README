@@ -1,0 +1,22 @@
+==== INSTALL ====
+
+For Linux/Unix:
+sudo python setup.py --install
+
+Windows:
+python ./sharez.in
+
+
+==== RUN ====
+
+To run Sharez simply type
+ sharez
+or go to your menu Applications -> Utilitys.
+
+
+==== USEAGE ====
+
+Drop a destination folder in the "Drop here."-field. All files and folder that
+should be coppied in there can now be added using Drag and Drop. After pressing
+'Apply' all files are coppied using rsync. You can watch the process under 'Jobs'.
+

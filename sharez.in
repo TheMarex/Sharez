@@ -269,8 +269,12 @@ class DestList(gtk.TreeView):
     def _delete_current_row(self):
         model, rows = self.get_selection().get_selected_rows()
         iters = [model.get_iter(r) for r in rows]
+        removed = []
         for it in iters:
+            src = model.get(it, 0)[0]
+            removed.append(src)
             model.remove(it)
+        self._handler.removed(self._dst, removed)
 
     def _key(self, widget, event):
         key = gtk.gdk.keyval_name(event.keyval)
@@ -382,7 +386,19 @@ class MainWin:
         j2 = self._get_job(model, nxt)
         if self._manager.swap(j1, j2):
             model.swap(it, nxt)
-    
+
+    def removed(self, dst, entries):
+        if not self._is_running:
+            return
+        for src in entries:
+            for job in self._jobs:
+                if  job.get_src() == src\
+                and job.get_dst() == dst:
+                    self._remove_job(job)
+                    self._manager.remove_job(job, update=False)
+                    break
+        self._manager.update()
+
     def dropped(self, dst, src):
         if self._is_running:
             job = Job(dst, src)

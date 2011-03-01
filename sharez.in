@@ -39,6 +39,7 @@ class RsyncParser:
 
     def _parse(self, data):
         if data in self._list:
+            self._job.update_file(os.path.basename(data))
             self._file = data
             return
 
@@ -50,7 +51,9 @@ class RsyncParser:
             prog = int(prog)
             fsize = int(fsize)
             total = int(float(self._transfered + fsize) / self._size * 100)
+            self._job.update_file_progress(prog)
             self._job.update_progress(total)
+            self._job.update_speed(speed)
             if prog == 100:
                 self._transfered += fsize
 
@@ -125,6 +128,18 @@ class Job(threading.Thread):
         if self._manager:
             self._manager.update_progress(self, percent)
 
+    def update_file(self, f):
+        if self._manager:
+            self._manager.update_file(self, f)
+
+    def update_speed(self, speed):
+        if self._manager:
+            self._manager.update_speed(self, speed)
+
+    def update_file_progress(self, percent):
+        if self._manager:
+            self._manager.update_file_progress(self, percent)
+
 class Manager:
     _jobs = None
     _current = None
@@ -194,6 +209,15 @@ class Manager:
 
     def update_progress(self, job, percent):
         self._boss.update_progress(job, percent)
+
+    def update_file_progress(self, job, percent):
+        self._boss.update_file_progress(job, percent)
+
+    def update_file(self, job, f):
+        self._boss.update_file(job, f)
+
+    def update_speed(self, job, speed):
+        self._boss.update_speed(job, speed)
 
 class DestList(gtk.TreeView):
     _store = None
@@ -316,7 +340,7 @@ class MainWin:
 
         win = self._builder.get_object("mainWin")
         win.connect('destroy', self._close)
-        win.set_size_request(800, 600)
+        win.set_size_request(1000, 600)
 
         self._box = self._builder.get_object("destBox")
         drop = DropLocation(self)
@@ -427,7 +451,7 @@ class MainWin:
     def _add_job(self, job):
         src = job.get_src()
         dst = job.get_dst()
-        self._store.append((src, dst, 0))
+        self._store.append((src, dst, "", 0, 0, ""))
         self._jobs.append(job)
         self._manager.add_job(job)
 
@@ -468,12 +492,24 @@ class MainWin:
     def job_finished(self, job):
         self._remove_job(job)
 
+    def update_file(self, job, f):
+        self._update(job, 2, f)
+
+    def update_file_progress(self, job, prog):
+        self._update(job, 3, prog)
+
+    def update_speed(self, job, speed):
+        self._update(job, 5, speed)
+
     def update_progress(self, job, prog):
+        self._update(job, 4, prog)
+
+    def _update(self, job, col, val):
         if job not in self._jobs:
             print "WARNING: Update from removed job: %s" % job
             return
         it = self._get_iter(job)
-        self._store.set(it, 2, prog)
+        self._store.set(it, col, val)
 
     def _run(self, widget):
         if self._is_running:

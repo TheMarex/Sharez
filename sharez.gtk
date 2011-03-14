@@ -61,9 +61,12 @@
                     <property name="vadjustment">adjustment1</property>
                     <property name="headers_clickable">False</property>
                     <property name="search_column">0</property>
+                    <property name="enable_grid_lines">vertical</property>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn1">
+                        <property name="resizable">True</property>
                         <property name="sizing">autosize</property>
+                        <property name="min_width">200</property>
                         <property name="title">Source</property>
                         <property name="expand">True</property>
                         <child>
@@ -76,7 +79,9 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn2">
+                        <property name="resizable">True</property>
                         <property name="sizing">autosize</property>
+                        <property name="min_width">200</property>
                         <property name="title">Destination</property>
                         <property name="expand">True</property>
                         <child>
@@ -89,6 +94,9 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn4">
+                        <property name="resizable">True</property>
+                        <property name="sizing">autosize</property>
+                        <property name="min_width">200</property>
                         <property name="title">Current File</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext3"/>
@@ -100,8 +108,10 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn3">
-                        <property name="resizable">True</property>
-                        <property name="fixed_width">100</property>
+                        <property name="sizing">autosize</property>
+                        <property name="fixed_width">50</property>
+                        <property name="min_width">50</property>
+                        <property name="max_width">50</property>
                         <property name="title">File Progress</property>
                         <child>
                           <object class="GtkCellRendererProgress" id="cellrendererprogress1"/>
@@ -113,6 +123,10 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn5">
+                        <property name="sizing">autosize</property>
+                        <property name="fixed_width">50</property>
+                        <property name="min_width">50</property>
+                        <property name="max_width">50</property>
                         <property name="title">Total Progress</property>
                         <child>
                           <object class="GtkCellRendererProgress" id="cellrendererprogress2"/>
@@ -124,6 +138,10 @@
                     </child>
                     <child>
                       <object class="GtkTreeViewColumn" id="treeviewcolumn6">
+                        <property name="sizing">autosize</property>
+                        <property name="fixed_width">80</property>
+                        <property name="min_width">80</property>
+                        <property name="max_width">80</property>
                         <property name="title">Speed</property>
                         <child>
                           <object class="GtkCellRendererText" id="cellrenderertext4"/>

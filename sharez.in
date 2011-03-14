@@ -401,7 +401,7 @@ class MainWin:
 
     def dropped(self, dst, src):
         if self._is_running:
-            job = Job(dst, src)
+            job = Job(src, dst)
             self._add_job(job)
 
     def _dst_label(self, path):

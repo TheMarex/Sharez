@@ -179,7 +179,7 @@ class Manager:
     def update(self):
         if  len(self._current) < self._min\
         and len(self._jobs) > 0:
-            self._start_job()
+            self._next_job()
 
     def add_job(self, job):
         self._jobs.append(job)
@@ -195,8 +195,11 @@ class Manager:
         if update:
             self.update()
 
-    def _start_job(self):
+    def _next_job(self):
         job = self._jobs[0]
+        self.start_job(job)
+
+    def start_job(self, job):
         self._jobs.remove(job)
         self._current.append(job)
         job.start()
@@ -387,6 +390,12 @@ class MainWin:
         if self._manager.swap(j1, j2):
             model.swap(it, nxt)
 
+    def _start_job(self, widget):
+        sel = self._tree.get_selection()
+        model, it = sel.get_selected()
+        job = self._get_job(model, it)
+        self._manager.start_job(job)
+
     def removed(self, dst, entries):
         if not self._is_running:
             return
@@ -452,7 +461,7 @@ class MainWin:
         box.pack_start(button, False, False)
         self._box.pack_start(box)
         self._box.show_all()
-    
+
     def _close(self, widget):
         self._cancel(None)
         gtk.main_quit()

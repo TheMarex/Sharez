@@ -19,6 +19,30 @@ DATADIR = "@prefix@/share/sharez/"
 if ".in" in sys.argv[0]:
     DATADIR = "."	
 
+def get_mount(path):
+    path = os.path.abspath(path)
+    while path != os.path.sep:
+        if os.path.ismount(path):
+            return path
+        path = os.path.abspath(os.path.join(path, os.pardir))
+    return path
+
+def get_dev(mount):
+    cmd = "mount"
+    cmd = shlex.split(cmd)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+    data = proc.communicate()[0]
+    exp = re.compile("(.*)[\s]+on[\s]+([^\s]+)[\s]+.*")
+    for dev, mp in exp.findall(data):
+        if os.path.samefile(mount, mp):
+            # remove partition number
+            # e.g. /dev/sdb1 -> /dev/sdb
+            exp = re.compile("/.*/[^\d]+([\d]*)")
+            num = exp.findall(dev)[0]
+            dev = dev.replace(num, "")
+            return dev
+    return None
+
 class RsyncParser:
     _proc = None
     _job = None
@@ -51,6 +75,8 @@ class RsyncParser:
             prog = int(prog)
             fsize = int(fsize)
             total = int(float(self._transfered + fsize) / self._size * 100)
+            if prog > 100 or total > 100:
+                print "WARNING: Failed to parse %s" % data
             self._job.update_file_progress(prog)
             self._job.update_progress(total)
             self._job.update_speed(speed)
@@ -145,6 +171,7 @@ class Manager:
     _current = None
     _boss = None
     _min = 1
+    _max = 3
 
     def __init__(self, boss):
         self._jobs = []
@@ -177,8 +204,16 @@ class Manager:
         return True
 
     def update(self):
-        if  len(self._current) < self._min\
-        and len(self._jobs) > 0:
+        if not self._jobs:
+            return
+
+        while len(self._current) < self._max:
+            nxt = self._select_job()
+            if not nxt:
+                break
+            self.start_job(nxt)
+
+        if  len(self._current) < self._min:
             self._next_job()
 
     def add_job(self, job):
@@ -195,9 +230,42 @@ class Manager:
         if update:
             self.update()
 
+    def _get_devs(self, job):
+        src = job.get_src()
+        dst = job.get_dst()
+
+        mount = get_mount(src)
+        dev1 = get_dev(mount)
+
+        mount = get_mount(dst)
+        dev2 = get_dev(mount)
+
+        return dev1, dev2
+
+    def _select_job(self):
+        devices = []
+        for job in self._current:
+            devs = self._get_devs(job)
+            devices += list(devs)
+
+        nxt = None
+        # pick a job that doesn't use the active drives
+        if devices:
+            for job in self._jobs:
+                devs = self._get_devs(job)
+                inuse = False
+                for d in devs:
+                    if d in devices:
+                        inuse = True
+                        break
+                if not inuse:
+                    nxt = job
+                    break
+        return nxt
+
     def _next_job(self):
-        job = self._jobs[0]
-        self.start_job(job)
+        nxt = self._jobs[0]
+        self.start_job(nxt)
 
     def start_job(self, job):
         self._jobs.remove(job)

@@ -357,8 +357,7 @@ class DestList(gtk.TreeView):
         valid = False
         for url in data:
             path = urllib.unquote(urlparse.urlparse(url).path)
-            if os.path.exists(path)\
-            and os.path.isdir(path):
+            if os.path.exists(path):
                 self._handler.dropped(self._dst, path)
                 self._store.append((path,))
                 valid = True

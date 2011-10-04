@@ -403,7 +403,7 @@ class MainWin:
 
     def __init__(self):
         self._builder = gtk.Builder()
-        self._builder.add_from_file(os.path.join(DATADIR, "sharez.gtk"))
+        self._builder.add_from_file(os.path.join(DATADIR, "sharez.ui"))
         self._builder.connect_signals(self)
         
         self._lists = {}

@@ -116,7 +116,7 @@ f.close ()
 
 data_files = [
                 ("share/applications", ["sharez.desktop"]),
-                ("share/sharez", ["sharez.gtk"]),
+                ("share/sharez", ["sharez.ui"]),
              ]
 
 global_icon_path = "share/icons/hicolor/"

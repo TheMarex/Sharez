@@ -368,8 +368,7 @@ class DropLocation(gtk.Label):
 
     def __init__(self, handler):
         gtk.Label.__init__(self)
-        self.set_angle(90)
-        self.set_size_request(30, -1)
+        self.set_size_request(-1, 30)
 
         self._handler = handler
 
@@ -417,10 +416,13 @@ class MainWin:
         win.set_size_request(1000, 600)
 
         self._box = self._builder.get_object("destBox")
+
         drop = DropLocation(self)
         frame = gtk.Frame()
         frame.add(drop)
-        self._box.pack_start(frame, False, True)
+        dframe = self._builder.get_object("destFrame")
+        dframe.pack_start(frame, False, True)
+        dframe.reorder_child(frame, 0)
 
         self._store = self._builder.get_object("procStore")
         self._tree = self._builder.get_object("procList")

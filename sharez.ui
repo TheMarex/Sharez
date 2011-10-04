@@ -30,12 +30,20 @@
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <child>
-              <object class="GtkHBox" id="destBox">
+              <object class="GtkVBox" id="destFrame">
                 <property name="visible">True</property>
-                <property name="border_width">12</property>
-                <property name="spacing">6</property>
                 <child>
-                  <placeholder/>
+                  <object class="GtkHBox" id="destBox">
+                    <property name="visible">True</property>
+                    <property name="border_width">12</property>
+                    <property name="spacing">6</property>
+                    <child>
+                      <placeholder/>
+                    </child>
+                  </object>
+                  <packing>
+                    <property name="position">0</property>
+                  </packing>
                 </child>
               </object>
             </child>

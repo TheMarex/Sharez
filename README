@@ -1,7 +1,7 @@
 ==== INSTALL ====
 
 For Linux/Unix:
-sudo python setup.py --install
+sudo python setup.py install
 
 Windows:
 python ./sharez.in
